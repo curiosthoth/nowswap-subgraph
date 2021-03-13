@@ -1,3 +1,9 @@
+# Nowswap Subgraph
+
+This is a fork of Uniswap V2 Subgraph with some light modifications.
+
+Below is the original Uniswap V2 Subgraph README.
+
 # Uniswap V2 Subgraph
 
 [Uniswap](https://uniswap.org/) is a decentralized protocol for automated token exchange on Ethereum.
