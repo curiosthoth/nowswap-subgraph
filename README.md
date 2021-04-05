@@ -61,3 +61,9 @@ This query fetches aggredated data from all uniswap pairs and tokens, to give a 
   }
 }
 ```
+
+## Deploy
+
+```bash
+yarn codegen && yarn build && yarn deploy
+```
