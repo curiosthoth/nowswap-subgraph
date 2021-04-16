@@ -22,7 +22,7 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot
+  createLiquiditySnapshot, calculateFees
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -445,6 +445,25 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
+  let currentSwapFees = calculateFees(
+    amount0In,
+    amount0Out,
+    token0.totalLiquidity,
+    amount1In,
+    amount1Out,
+    token1.totalLiquidity,
+    token0 as Token,
+    token1 as Token,
+    bundle.ethPrice
+  )
+  if (pair.fees === ZERO_BD) {
+    // Set the base for fees to 0.003 (because we have been missing some events)
+    let volume = pair.volumeUSD ? pair.volumeUSD : pair.untrackedVolumeUSD
+    pair.fees = volume.times(BigDecimal.fromString("0.003"))
+  } else {
+    // Fees is now up-to-date, need to update it to other data structure as well.
+    pair.fees = pair.fees.plus(currentSwapFees)
+  }
   pair.save()
 
   // update global values, only used tracked amounts for volume
@@ -453,7 +472,11 @@ export function handleSwap(event: Swap): void {
   uniswap.totalVolumeETH = uniswap.totalVolumeETH.plus(trackedAmountETH)
   uniswap.untrackedVolumeUSD = uniswap.untrackedVolumeUSD.plus(derivedAmountUSD)
   uniswap.txCount = uniswap.txCount.plus(ONE_BI)
-
+  if (uniswap.fees === null) {
+    uniswap.fees = uniswap.totalVolumeUSD.times(BigDecimal.fromString("0.003"))
+  } else {
+    uniswap.fees = uniswap.fees.plus(currentSwapFees)
+  }
   // save entities
   pair.save()
   token0.save()
@@ -492,6 +515,7 @@ export function handleSwap(event: Swap): void {
   swap.logIndex = event.logIndex
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD
+  swap.fees = currentSwapFees
   swap.save()
 
   // update the transaction
@@ -513,18 +537,21 @@ export function handleSwap(event: Swap): void {
   uniswapDayData.dailyVolumeUSD = uniswapDayData.dailyVolumeUSD.plus(trackedAmountUSD)
   uniswapDayData.dailyVolumeETH = uniswapDayData.dailyVolumeETH.plus(trackedAmountETH)
   uniswapDayData.dailyVolumeUntracked = uniswapDayData.dailyVolumeUntracked.plus(derivedAmountUSD)
+  uniswapDayData.fees = uniswapDayData.fees.plus(currentSwapFees)
   uniswapDayData.save()
 
   // swap specific updating for pair
   pairDayData.dailyVolumeToken0 = pairDayData.dailyVolumeToken0.plus(amount0Total)
   pairDayData.dailyVolumeToken1 = pairDayData.dailyVolumeToken1.plus(amount1Total)
   pairDayData.dailyVolumeUSD = pairDayData.dailyVolumeUSD.plus(trackedAmountUSD)
+  pairDayData.fees = pairDayData.fees.plus(currentSwapFees)
   pairDayData.save()
 
   // update hourly pair data
   pairHourData.hourlyVolumeToken0 = pairHourData.hourlyVolumeToken0.plus(amount0Total)
   pairHourData.hourlyVolumeToken1 = pairHourData.hourlyVolumeToken1.plus(amount1Total)
   pairHourData.hourlyVolumeUSD = pairHourData.hourlyVolumeUSD.plus(trackedAmountUSD)
+  pairHourData.fees = pairHourData.fees.plus(currentSwapFees)
   pairHourData.save()
 
   // swap specific updating for token0

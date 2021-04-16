@@ -18,6 +18,8 @@ type UniswapFactory @entity {
 
   # transactions
   txCount: BigInt!
+  # total fees so far
+  fees: BigDecimal
 }
 
 type Token @entity {
@@ -79,6 +81,8 @@ type Pair @entity {
   volumeUSD: BigDecimal!
   untrackedVolumeUSD: BigDecimal!
   txCount: BigInt!
+  # fees for swaps
+  fees: BigDecimal!
 
   # creation stats
   createdAtTimestamp: BigInt!
@@ -206,6 +210,7 @@ type Swap @entity {
 
   # derived info
   amountUSD: BigDecimal!
+  fees: BigDecimal
 }
 
 # stores for USD calculations
@@ -229,6 +234,7 @@ type UniswapDayData @entity {
   totalLiquidityUSD: BigDecimal!
 
   txCount: BigInt!
+  fees: BigDecimal!  # Accumulate at each trade
 }
 
 type PairHourData @entity {
@@ -242,6 +248,7 @@ type PairHourData @entity {
 
   # derived liquidity
   reserveUSD: BigDecimal!
+  fees: BigDecimal!
 
   # volume stats
   hourlyVolumeToken0: BigDecimal!
@@ -267,6 +274,7 @@ type PairDayData @entity {
 
   # derived liquidity
   reserveUSD: BigDecimal!
+  fees: BigDecimal!
 
   # volume stats
   dailyVolumeToken0: BigDecimal!

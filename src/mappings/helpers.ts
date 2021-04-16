@@ -193,3 +193,38 @@ export function createLiquiditySnapshot(position: LiquidityPosition, event: Ethe
   snapshot.save()
   position.save()
 }
+
+export function calculateFees(amount0In: BigDecimal, amount0Out: BigDecimal, liquidity0: BigDecimal,
+                              amount1In: BigDecimal, amount1Out: BigDecimal, liquidity1: BigDecimal,
+                              token0: Token, token1: Token, ethPrice: BigDecimal): BigDecimal {
+  let fee0 = ZERO_BD
+  let fee1 = ZERO_BD
+
+  if (!token0.derivedETH || !token1.derivedETH) {
+    return fee0.plus(fee1)
+  }
+
+  if (liquidity0 > ZERO_BD) {
+    let fee0Rate = (amount0In.plus(amount0Out)).div(liquidity0)
+    fee0 = fee0Rate.times(
+      (amount0In.plus(amount0Out)).times(token0.derivedETH as BigDecimal).times(ethPrice)
+    )
+  }
+
+  if (liquidity1 > ZERO_BD) {
+    let fee1Rate = (amount1In.plus(amount1Out)).div(liquidity1)
+    fee1 = fee1Rate.times(
+      (amount1In.plus(amount1Out)).times(token1.derivedETH as BigDecimal).times(ethPrice)
+    )
+  }
+  let fees = fee0.plus(fee1)
+  log.debug(
+    "Calculate Fees: amount0In = {}, amount0Out = {}, amount1In = {}, amount1Out = {}, fees = {}",
+    [
+      amount0In.toString(), amount0Out.toString(),
+      amount1In.toString(), amount1Out.toString(),
+      fees.toString()
+    ]
+  )
+  return fees
+}

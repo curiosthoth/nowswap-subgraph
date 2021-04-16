@@ -7,7 +7,7 @@ const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 // const USDC_WETH_PAIR = '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc' // TODO: NOT VALID
 // const DAI_WETH_PAIR = '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11' // TODO: NOT VALID
 // Router address: 0x34E1F74e0786d18C08061B3C99b5D416060c55b4
-const USDT_WETH_PAIR = '0x9536A78440f72f5E9612949F1848fe5E9D4934CC' // created block 11979203
+const USDT_WETH_PAIR = '0x9536a78440f72f5e9612949f1848fe5e9d4934cc' // created block 11979203
 
 export function getEthPriceInUSD(): BigDecimal {
   // fetch eth prices for each stablecoin

@@ -8,7 +8,8 @@
     "build": "graph build",
     "deploy": "graph deploy curiosthoth/nowswap --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
     "staging-deploy": "graph deploy curiosthoth/nowswapstaging --debug --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-    "dev-deploy": "graph deploy curiosthoth/nowswapdev --debug --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/"
+    "dev-deploy": "graph deploy curiosthoth/nowswapdev --debug --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+    "mint-deploy": "graph deploy curiosthoth/mintswap --debug --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.16.0",
