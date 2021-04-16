@@ -1,5 +1,5 @@
 /* eslint-disable prefer-const */
-import { BigInt, BigDecimal, store, Address, log } from '@graphprotocol/graph-ts'
+import { BigInt, BigDecimal, store, Address } from '@graphprotocol/graph-ts'
 import {
   Pair,
   Token,
@@ -22,11 +22,8 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot,
-  ZERO_BI,
-  calculateFees
+  createLiquiditySnapshot
 } from './helpers'
-import { Pair as PairTemplate } from '../types/templates'
 
 function isCompleteMint(mintId: string): boolean {
   return MintEvent.load(mintId).sender !== null // sufficient checks
@@ -326,8 +323,8 @@ export function handleMint(event: Mint): void {
   createLiquiditySnapshot(liquidityPosition, event)
 
   // update day entities
-  updatePairDayData(event, ZERO_BD)
-  updatePairHourData(event, ZERO_BD)
+  updatePairDayData(event)
+  updatePairHourData(event)
   updateUniswapDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
@@ -388,8 +385,8 @@ export function handleBurn(event: Burn): void {
   createLiquiditySnapshot(liquidityPosition, event)
 
   // update day entities
-  updatePairDayData(event, ZERO_BD)
-  updatePairHourData(event, ZERO_BD)
+  updatePairDayData(event)
+  updatePairHourData(event)
   updateUniswapDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
@@ -448,21 +445,6 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
-
-  log.debug("Pair txCount: {} ", [pair.txCount.toString()])
-
-  let fees = calculateFees(
-    amount0In, amount0Out, token0.totalLiquidity,
-    amount1In, amount1Out, token1.totalLiquidity
-  )
-  if (pair.fees === ZERO_BD) {
-    // Set the base for fees to 0.003 (because we have been missing some events)
-    let volume = pair.volumeUSD ? pair.volumeUSD: pair.untrackedVolumeUSD
-    fees = volume.times(BigDecimal.fromString("0.003"))
-  }
-  // Fees is now up-to-date, need to update it to other data structure as well.
-  fees = pair.fees.plus(fees)
-  pair.fees = fees
   pair.save()
 
   // update global values, only used tracked amounts for volume
@@ -471,8 +453,6 @@ export function handleSwap(event: Swap): void {
   uniswap.totalVolumeETH = uniswap.totalVolumeETH.plus(trackedAmountETH)
   uniswap.untrackedVolumeUSD = uniswap.untrackedVolumeUSD.plus(derivedAmountUSD)
   uniswap.txCount = uniswap.txCount.plus(ONE_BI)
-
-  log.debug("Fees calculated : {} ", [fees.toString()])
 
   // save entities
   pair.save()
@@ -523,8 +503,8 @@ export function handleSwap(event: Swap): void {
   transaction.save()
 
   // update day entities
-  let pairDayData = updatePairDayData(event, fees)
-  let pairHourData = updatePairHourData(event, fees)
+  let pairDayData = updatePairDayData(event)
+  let pairHourData = updatePairHourData(event)
   let uniswapDayData = updateUniswapDayData(event)
   let token0DayData = updateTokenDayData(token0 as Token, event)
   let token1DayData = updateTokenDayData(token1 as Token, event)

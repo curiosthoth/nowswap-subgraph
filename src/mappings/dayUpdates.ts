@@ -28,7 +28,7 @@ export function updateUniswapDayData(event: EthereumEvent): UniswapDayData {
   return uniswapDayData as UniswapDayData
 }
 
-export function updatePairDayData(event: EthereumEvent, fees: BigDecimal): PairDayData {
+export function updatePairDayData(event: EthereumEvent): PairDayData {
   let timestamp = event.block.timestamp.toI32()
   let dayID = timestamp / 86400
   let dayStartTimestamp = dayID * 86400
@@ -55,13 +55,12 @@ export function updatePairDayData(event: EthereumEvent, fees: BigDecimal): PairD
   pairDayData.reserve1 = pair.reserve1
   pairDayData.reserveUSD = pair.reserveUSD
   pairDayData.dailyTxns = pairDayData.dailyTxns.plus(ONE_BI)
-  pairDayData.fees = fees
   pairDayData.save()
 
   return pairDayData as PairDayData
 }
 
-export function updatePairHourData(event: EthereumEvent, fees: BigDecimal): PairHourData {
+export function updatePairHourData(event: EthereumEvent): PairHourData {
   let timestamp = event.block.timestamp.toI32()
   let hourIndex = timestamp / 3600 // get unique hour within unix history
   let hourStartUnix = hourIndex * 3600 // want the rounded effect
@@ -85,7 +84,6 @@ export function updatePairHourData(event: EthereumEvent, fees: BigDecimal): Pair
   pairHourData.reserve1 = pair.reserve1
   pairHourData.reserveUSD = pair.reserveUSD
   pairHourData.hourlyTxns = pairHourData.hourlyTxns.plus(ONE_BI)
-  pairHourData.fees = fees
   pairHourData.save()
 
   return pairHourData as PairHourData

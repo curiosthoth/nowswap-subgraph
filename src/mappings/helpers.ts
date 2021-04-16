@@ -1,9 +1,9 @@
 /* eslint-disable prefer-const */
-import { Address, BigDecimal, BigInt, EthereumEvent, log } from '@graphprotocol/graph-ts'
+import { log, BigInt, BigDecimal, Address, EthereumEvent } from '@graphprotocol/graph-ts'
 import { ERC20 } from '../types/Factory/ERC20'
 import { ERC20SymbolBytes } from '../types/Factory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../types/Factory/ERC20NameBytes'
-import { Bundle, LiquidityPosition, LiquidityPositionSnapshot, Pair, Token, User } from '../types/schema'
+import { User, Bundle, Token, LiquidityPosition, LiquidityPositionSnapshot, Pair } from '../types/schema'
 import { Factory as FactoryContract } from '../types/templates/Pair/Factory'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
@@ -192,19 +192,4 @@ export function createLiquiditySnapshot(position: LiquidityPosition, event: Ethe
   snapshot.liquidityPosition = position.id
   snapshot.save()
   position.save()
-}
-
-export function calculateFees(amount0In: BigDecimal, amount0Out: BigDecimal, liquidity0: BigDecimal,
-                              amount1In: BigDecimal, amount1Out: BigDecimal, liquidity1: BigDecimal): BigDecimal {
-  let fee0 = ZERO_BD
-  let fee1 = ZERO_BD
-
-  if (liquidity0 > ZERO_BD) {
-    fee0 = (amount0In.plus(amount0Out)).div(liquidity0)
-  }
-
-  if (liquidity1 > ZERO_BD) {
-    fee1 = (amount1In.plus(amount1Out)).div(liquidity1)
-  }
-  return fee0.plus(fee1)
 }
