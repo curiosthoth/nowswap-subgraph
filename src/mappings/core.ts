@@ -445,6 +445,8 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
+
+  let amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD
   let currentSwapFees = calculateFees(
     amount0In,
     amount0Out,
@@ -452,9 +454,7 @@ export function handleSwap(event: Swap): void {
     amount1In,
     amount1Out,
     token1.totalLiquidity,
-    token0 as Token,
-    token1 as Token,
-    bundle.ethPrice
+    amountUSD
   )
   if (pair.fees === ZERO_BD) {
     // Set the base for fees to 0.003 (because we have been missing some events)
