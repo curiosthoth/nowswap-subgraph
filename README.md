@@ -5,9 +5,9 @@ It deploys to Mintswap on (The Graph)[https://www.thegraph.com]
 
 ## Key Entity Overviews
 
-#### UniswapFactory
+#### NowswapFactory
 
-Contains data across all of Uniswap V2. This entity tracks important things like total liquidity (in ETH and USD, see below), all time volume, transaction count, number of pairs and more.
+Contains data across all of Nowswap. This entity tracks important things like total liquidity (in ETH and USD, see below), all time volume, transaction count, number of pairs and more.
 
 #### Token
 
@@ -19,7 +19,7 @@ Contains data on a specific pair.
 
 #### Transaction
 
-Every transaction on Uniswap is stored. Each transaction contains an array of mints, burns, and swaps that occured within it.
+Every transaction on Nowswap is stored. Each transaction contains an array of mints, burns, and swaps that occured within it.
 
 #### Mint, Burn, Swap
 
@@ -27,13 +27,13 @@ These contain specifc information about a transaction. Things like which pair tr
 
 ## Example Queries
 
-### Querying Aggregated Uniswap Data
+### Querying Aggregated Nowswap Data
 
-This query fetches aggredated data from all uniswap pairs and tokens, to give a view into how much activity is happening within the whole protocol.
+This query fetches aggredated data from all Nowswap pairs and tokens, to give a view into how much activity is happening within the whole protocol.
 
 ```graphql
 {
-  uniswapFactories(first: 1) {
+  nowswapFactories(first: 1) {
     pairCount
     totalVolumeUSD
     totalLiquidityUSD
