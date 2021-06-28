@@ -176,7 +176,7 @@ export function createLiquiditySnapshot(position: LiquidityPosition, event: Ethe
   let token1 = Token.load(pair.token1)
 
   // create new snapshot
-  let snapshot = new LiquidityPositionSnapshot(position.id.concat(timestamp.toStoting()))
+  let snapshot = new LiquidityPositionSnapshot(position.id.concat(timestamp.toString()))
   snapshot.liquidityPosition = position.id
   snapshot.timestamp = timestamp
   snapshot.block = event.block.number.toI32()

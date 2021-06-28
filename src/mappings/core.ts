@@ -11,7 +11,7 @@ import {
   Bundle
 } from '../types/schema'
 import { Pair as PairContract, Mint, Burn, Swap, Transfer, Sync } from '../types/templates/Pair/Pair'
-import { updatePairDayData, updateTokenDayData, updateUniswapDayData, updatePairHourData } from './dayUpdates'
+import { updatePairDayData, updateTokenDayData, updateNowswapDayData, updatePairHourData } from './dayUpdates'
 import { getEthPriceInUSD, findEthPerToken, getTrackedVolumeUSD, getTrackedLiquidityUSD } from './pricing'
 import {
   convertTokenToDecimal,
@@ -214,10 +214,10 @@ export function handleSync(event: Sync): void {
   let pair = Pair.load(event.address.toHex())
   let token0 = Token.load(pair.token0)
   let token1 = Token.load(pair.token1)
-  let uniswap = NowswapFactory.load(FACTORY_ADDRESS)
+  let nowswapFactory = NowswapFactory.load(FACTORY_ADDRESS)
 
   // reset factory liquidity by subtracting onluy tarcked liquidity
-  uniswap.totalLiquidityETH = uniswap.totalLiquidityETH.minus(pair.trackedReserveETH as BigDecimal)
+  nowswapFactory.totalLiquidityETH = nowswapFactory.totalLiquidityETH.minus(pair.trackedReserveETH as BigDecimal)
 
   // reset token total liquidity amounts
   token0.totalLiquidity = token0.totalLiquidity.minus(pair.reserve0)
@@ -261,8 +261,8 @@ export function handleSync(event: Sync): void {
   pair.reserveUSD = pair.reserveETH.times(bundle.ethPrice)
 
   // use tracked amounts globally
-  uniswap.totalLiquidityETH = uniswap.totalLiquidityETH.plus(trackedLiquidityETH)
-  uniswap.totalLiquidityUSD = uniswap.totalLiquidityETH.times(bundle.ethPrice)
+  nowswapFactory.totalLiquidityETH = nowswapFactory.totalLiquidityETH.plus(trackedLiquidityETH)
+  nowswapFactory.totalLiquidityUSD = nowswapFactory.totalLiquidityETH.times(bundle.ethPrice)
 
   // now correctly set liquidity amounts for each token
   token0.totalLiquidity = token0.totalLiquidity.plus(pair.reserve0)
@@ -270,7 +270,7 @@ export function handleSync(event: Sync): void {
 
   // save entities
   pair.save()
-  uniswap.save()
+  nowswapFactory.save()
   token0.save()
   token1.save()
 }
@@ -281,7 +281,7 @@ export function handleMint(event: Mint): void {
   let mint = MintEvent.load(mints[mints.length - 1])
 
   let pair = Pair.load(event.address.toHex())
-  let uniswap = NowswapFactory.load(FACTORY_ADDRESS)
+  let nowswapFactory = NowswapFactory.load(FACTORY_ADDRESS)
 
   let token0 = Token.load(pair.token0)
   let token1 = Token.load(pair.token1)
@@ -303,13 +303,13 @@ export function handleMint(event: Mint): void {
 
   // update txn counts
   pair.txCount = pair.txCount.plus(ONE_BI)
-  uniswap.txCount = uniswap.txCount.plus(ONE_BI)
+  nowswapFactory.txCount = nowswapFactory.txCount.plus(ONE_BI)
 
   // save entities
   token0.save()
   token1.save()
   pair.save()
-  uniswap.save()
+  nowswapFactory.save()
 
   mint.sender = event.params.sender
   mint.amount0 = token0Amount as BigDecimal
@@ -325,7 +325,7 @@ export function handleMint(event: Mint): void {
   // update day entities
   updatePairDayData(event)
   updatePairHourData(event)
-  updateUniswapDayData(event)
+  updateNowswapDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
 }
@@ -342,7 +342,7 @@ export function handleBurn(event: Burn): void {
   let burn = BurnEvent.load(burns[burns.length - 1])
 
   let pair = Pair.load(event.address.toHex())
-  let uniswap = NowswapFactory.load(FACTORY_ADDRESS)
+  let nowswapFactory = NowswapFactory.load(FACTORY_ADDRESS)
 
   //update token info
   let token0 = Token.load(pair.token0)
@@ -362,14 +362,14 @@ export function handleBurn(event: Burn): void {
     .times(bundle.ethPrice)
 
   // update txn counts
-  uniswap.txCount = uniswap.txCount.plus(ONE_BI)
+  nowswapFactory.txCount = nowswapFactory.txCount.plus(ONE_BI)
   pair.txCount = pair.txCount.plus(ONE_BI)
 
   // update global counter and save
   token0.save()
   token1.save()
   pair.save()
-  uniswap.save()
+  nowswapFactory.save()
 
   // update burn
   // burn.sender = event.params.sender
@@ -387,7 +387,7 @@ export function handleBurn(event: Burn): void {
   // update day entities
   updatePairDayData(event)
   updatePairHourData(event)
-  updateUniswapDayData(event)
+  updateNowswapDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
 }
@@ -467,21 +467,21 @@ export function handleSwap(event: Swap): void {
   pair.save()
 
   // update global values, only used tracked amounts for volume
-  let uniswap = NowswapFactory.load(FACTORY_ADDRESS)
-  uniswap.totalVolumeUSD = uniswap.totalVolumeUSD.plus(trackedAmountUSD)
-  uniswap.totalVolumeETH = uniswap.totalVolumeETH.plus(trackedAmountETH)
-  uniswap.untrackedVolumeUSD = uniswap.untrackedVolumeUSD.plus(derivedAmountUSD)
-  uniswap.txCount = uniswap.txCount.plus(ONE_BI)
-  if (uniswap.fees === null) {
-    uniswap.fees = uniswap.totalVolumeUSD.times(BigDecimal.fromString("0.003"))
+  let nowswapFactory = NowswapFactory.load(FACTORY_ADDRESS)
+  nowswapFactory.totalVolumeUSD = nowswapFactory.totalVolumeUSD.plus(trackedAmountUSD)
+  nowswapFactory.totalVolumeETH = nowswapFactory.totalVolumeETH.plus(trackedAmountETH)
+  nowswapFactory.untrackedVolumeUSD = nowswapFactory.untrackedVolumeUSD.plus(derivedAmountUSD)
+  nowswapFactory.txCount = nowswapFactory.txCount.plus(ONE_BI)
+  if (nowswapFactory.fees === null) {
+    nowswapFactory.fees = nowswapFactory.totalVolumeUSD.times(BigDecimal.fromString("0.003"))
   } else {
-    uniswap.fees = uniswap.fees.plus(currentSwapFees)
+    nowswapFactory.fees = nowswapFactory.fees.plus(currentSwapFees)
   }
   // save entities
   pair.save()
   token0.save()
   token1.save()
-  uniswap.save()
+  nowswapFactory.save()
 
   let transaction = Transaction.load(event.transaction.hash.toHexString())
   if (transaction === null) {
@@ -529,16 +529,16 @@ export function handleSwap(event: Swap): void {
   // update day entities
   let pairDayData = updatePairDayData(event)
   let pairHourData = updatePairHourData(event)
-  let uniswapDayData = updateUniswapDayData(event)
+  let nowswapDayData = updateNowswapDayData(event)
   let token0DayData = updateTokenDayData(token0 as Token, event)
   let token1DayData = updateTokenDayData(token1 as Token, event)
 
   // swap specific updating
-  uniswapDayData.dailyVolumeUSD = uniswapDayData.dailyVolumeUSD.plus(trackedAmountUSD)
-  uniswapDayData.dailyVolumeETH = uniswapDayData.dailyVolumeETH.plus(trackedAmountETH)
-  uniswapDayData.dailyVolumeUntracked = uniswapDayData.dailyVolumeUntracked.plus(derivedAmountUSD)
-  uniswapDayData.fees = uniswapDayData.fees.plus(currentSwapFees)
-  uniswapDayData.save()
+  nowswapDayData.dailyVolumeUSD = nowswapDayData.dailyVolumeUSD.plus(trackedAmountUSD)
+  nowswapDayData.dailyVolumeETH = nowswapDayData.dailyVolumeETH.plus(trackedAmountETH)
+  nowswapDayData.dailyVolumeUntracked = nowswapDayData.dailyVolumeUntracked.plus(derivedAmountUSD)
+  nowswapDayData.fees = nowswapDayData.fees.plus(currentSwapFees)
+  nowswapDayData.save()
 
   // swap specific updating for pair
   pairDayData.dailyVolumeToken0 = pairDayData.dailyVolumeToken0.plus(amount0Total)
