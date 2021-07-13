@@ -1,7 +1,5 @@
 # Nowswap Subgraph (Nowswap)
 
-This is a fork of Uniswap V2 Subgraph with some light modifications.
-It deploys to Mintswap on (The Graph)[https://www.thegraph.com]
 
 ## Key Entity Overviews
 
