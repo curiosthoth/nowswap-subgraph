@@ -41,12 +41,12 @@ This query fetches aggredated data from all Nowswap pairs and tokens, to give a 
 
 ## Deploy
 
-Deploy to `mintswap` subgraph,
+Deploy to `nowswap` subgraph,
 
 ```bash
 yarn codegen && yarn build && yarn mint-deploy
 ```
-Our current production info is hitting `mintswap` endpoints.
+Our current production info is hitting `nowswap` endpoints.
 
 Deploy to `nowswap` subgraph,
 
